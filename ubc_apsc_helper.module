@@ -1,0 +1,49 @@
+<?php
+
+/**
+ * @file
+ * Implement and invoke hooks to customise site items.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+ 
+/**
+ * Implements hook_form_alter().
+ */
+function ubc_apsc_helper_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+	
+  /* @var Drupal\Core\Entity\FieldableEntityInterface $entity */
+  $formObject = $form_state->getFormObject();
+  
+  // include additional CSS library on node forms
+  if ($formObject instanceof \Drupal\Core\Entity\EntityFormInterface) {
+    $entity = $formObject->getEntity();
+    if ($entity->getEntityTypeId() === 'node') {
+      $form['#attached']['library'][] = 'ubc_apsc_helper/apsc-admin-styles';
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_media()
+ */
+function ubc_apsc_helper_preprocess_media(array &$variables) {
+	// set remote embedded videos to lazy loading
+	if(isset($variables['content']['field_media_oembed_video']) && is_array($variables['content']['field_media_oembed_video'])) {
+		$variables['content']['field_media_oembed_video'][0]['#attributes']['loading'] = 'lazy';
+	}
+}
+
+/**
+ * Implements hook_update_projects_alter(&$projects).
+ * Alter the list of projects before fetching data and comparing versions.
+ *
+ * Hide projects from the list to avoid "No available releases found" warnings on the available updates report
+ *
+ * @see \Drupal\update\UpdateManager::getProjects()
+ * @see \Drupal\Core\Utility\ProjectInfo::processInfoList()
+ */
+function ubc_apsc_helper_update_projects_alter(&$projects) {
+  // Hide a site-specific module from the list.
+  unset($projects['ubc_apsc_helper']);
+}

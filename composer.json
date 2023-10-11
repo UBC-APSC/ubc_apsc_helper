@@ -1,0 +1,19 @@
+{
+	"name": "apsc-web/ubc_apsc_helper",
+	"description": "Helper module to offer customisations to UBC APSC Drupal sites",
+	"type": "drupal-module",
+	"require": {
+	},
+	"license": "GPL-2.0-or-later",
+	"authors": [
+		{
+			"name": "apsc-web",
+			"email": "web@apsc.ubc.ca",
+			"homepage": "https://apsc.ubc.ca"
+		}
+	],
+	"minimum-stability": "stable",
+	"support": {
+		"issues": "https://apsc.ubc.ca/web"
+	}
+}
