@@ -2,3 +2,5 @@ ubc_apsc_helper:
   external_stylesheet_load: ''
   external_stylesheet_url: ''
   external_stylesheet_body_class: ''
+  cookiebot_load: ''
+  cookiebot_datacbid: ''

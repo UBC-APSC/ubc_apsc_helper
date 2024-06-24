@@ -1,7 +1,7 @@
 ubc_apsc_helper.form:
-  path: '/admin/config/system/ubc_apsc_helper'
+  path: /admin/config/system/ubc_apsc_helper
   defaults:
-    _form: '\Drupal\ubc_apsc_helper\Form\UbcApscHelperForm'
+    _form: \Drupal\ubc_apsc_helper\Form\UbcApscHelperForm
     _title: 'UBC APSC Helper'
   requirements:
     _permission: 'administer UBC APSC Helper configuration'

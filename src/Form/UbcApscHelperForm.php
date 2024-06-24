@@ -64,6 +64,14 @@ class UbcApscHelperForm extends ConfigFormBase {
     // Default settings.
     $config = $this->config('ubc_apsc_helper.settings');
 	
+	// Additional <body> class.
+    $form['external_stylesheet_body_class'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Additional &lt;body&gt; class'),
+      '#default_value' => $config->get('ubc_apsc_helper.external_stylesheet_body_class'),
+      '#description' => $this->t('Optional, include class(es) on the &lt;body&gt; tag to increase specificity. Seperate multiple classes by a space.'),
+    ];
+	
 	// Syndicated content origin site label.
     $form['external_stylesheet_load'] = [
       '#type' => 'checkbox',
@@ -78,15 +86,37 @@ class UbcApscHelperForm extends ConfigFormBase {
       '#title' => $this->t('External stylesheet URL'),
       '#default_value' => $config->get('ubc_apsc_helper.external_stylesheet_url'),
       '#description' => $this->t('The URL for the external stylesheet (preferably without protocol http: or https:)'),
-      '#required' => TRUE,
+	  '#states' => array(
+		'required' => array(
+                ':input[name="external_stylesheet_load"]' => array('checked' => true),
+		),
+		'visible' => [
+                ':input[name="external_stylesheet_load"]' => ['checked' => true],
+		],
+	  ),
     ];
 	
-	// Syndicated content origin domain.
-    $form['external_stylesheet_body_class'] = [
+	// Cookiebot.
+    $form['cookiebot_load'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Load cookiebot script'),
+      '#default_value' => $config->get('ubc_apsc_helper.cookiebot_load'),
+      '#description' => $this->t('Check this box to load cookiebot.'),
+    ];
+	
+    $form['cookiebot_datacbid'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Additional &lt;body&gt; class'),
-      '#default_value' => $config->get('ubc_apsc_helper.external_stylesheet_body_class'),
-      '#description' => $this->t('Optional, include class(es) on the &lt;body&gt; tag to increase specificity. Seperate multiple classes by a space.'),
+      '#title' => $this->t('Cookiebot data-cbid'),
+      '#default_value' => $config->get('ubc_apsc_helper.cookiebot_datacbid'),
+      '#description' => $this->t('The data-cbid for cookiebot on this domain'),
+	  '#states' => [
+		'required' => [
+                ':input[name="cookiebot_load"]' => ['checked' => true],
+		],
+		'visible' => [
+                ':input[name="cookiebot_load"]' => ['checked' => true],
+		],
+	  ],
     ];
 	
     return $form;
@@ -109,6 +139,8 @@ class UbcApscHelperForm extends ConfigFormBase {
     $config->set('ubc_apsc_helper.external_stylesheet_load', $form_state->getValue('external_stylesheet_load'));
     $config->set('ubc_apsc_helper.external_stylesheet_url', $form_state->getValue('external_stylesheet_url'));
     $config->set('ubc_apsc_helper.external_stylesheet_body_class', $form_state->getValue('external_stylesheet_body_class'));
+    $config->set('ubc_apsc_helper.cookiebot_load', $form_state->getValue('cookiebot_load'));
+    $config->set('ubc_apsc_helper.cookiebot_datacbid', $form_state->getValue('cookiebot_datacbid'));
 	
     $config->save();
 	
