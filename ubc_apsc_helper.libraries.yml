@@ -1,5 +1,22 @@
+# Libraries
+
+# Admin stylesheet
 apsc-admin-styles:
   version: 1.x
   css:
     layout:
       css/admin.css: {}
+
+# Cookiebot
+cookiebot:
+  header: true
+  js:
+    https://consent.cookiebot.com/uc.js:
+      type: external
+      attributes:
+        id: Cookiebot
+        data-cbid: ''
+        data-blockingmode: auto
+  css:
+    layout:
+      css/cookie-styles.css: {}

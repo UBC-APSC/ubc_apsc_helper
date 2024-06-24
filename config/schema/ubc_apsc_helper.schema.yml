@@ -1,12 +1,12 @@
 ubc_apsc_helper.settings:
   type: config_object
-  label: 'Syndicated canonical url settings'
+  label: 'UBC APSC helper settings'
   mapping:
     ubc_apsc_helper:
       type: mapping
       mapping:
         external_stylesheet_load:
-          type: checkbox
+          type: boolean
           label: 'Load external stylesheet'
         external_stylesheet_url:
           type: text
@@ -14,3 +14,9 @@ ubc_apsc_helper.settings:
         external_stylesheet_body_class:
           type: text
           label: 'Additional &lt;body&gt; class'
+        cookiebot_load:
+          type: boolean
+          label: 'Load cookiebot'
+        cookiebot_datacbid:
+          type: text
+          label: 'Cookiebot data-cbid (cookiebot ID for this domain)'
