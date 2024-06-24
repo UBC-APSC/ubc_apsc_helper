@@ -1,0 +1,68 @@
+/* Cookiebot banner adjustments */
+
+body #CybotCookiebotDialog *,
+body #CybotCookiebotDialogBodyUnderlay *,
+body #CybotCookiebotDialogFooter * {
+	font-size: .875rem;
+}
+
+@media (min-width: 768px) {
+    body #CybotCookiebotDialog *,body #CybotCookiebotDialogBodyUnderlay *,body #CybotCookiebotDialogFooter * {
+        font-size:1rem
+    }
+}
+
+body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyButtonAccept,
+body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyLevelButtonAccept,
+body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll,
+body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyLevelButtonCustomize,
+body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyLevelButtonLevelOptinAllowallSelection,
+body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyButtonDecline {
+	border-radius: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+	padding: .75em 2em .65em;
+	font-family: Open Sans,Whitney SSm A,Whitney SSm B,Arial,sans-serif;
+	color: var(--color-primary);
+	border: 1px solid var(--color-primary);
+	transition: all .125s ease-out;
+}
+
+@media (min-width: 768px) {
+    body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyButtonAccept,body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyButtonDecline,body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyLevelButtonAccept,body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyLevelButtonCustomize,body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll,body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyLevelButtonLevelOptinAllowallSelection {
+        font-size:1.25rem
+    }
+}
+
+body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll {
+	background: var(--color-primary);
+	color: #FFF;
+}
+
+body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyButtonAccept:hover,
+body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyLevelButtonAccept:hover,
+body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll:hover,
+body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyLevelButtonCustomize:hover,
+body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyLevelButtonLevelOptinAllowallSelection:hover,
+body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyButtonDecline:hover {
+	background: var(--color-primary);
+	color: #FFF;
+	opacity: 1;
+}
+
+body #CybotCookiebotDialogFooter #CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll:hover {
+	background: #FFF;
+	color: var(--color-primary);
+	opacity: 1;
+}
+
+body #CybotCookiebotDialog input:checked+.CybotCookiebotDialogBodyLevelButtonSlider {
+	background-color: var(--color-secondary);
+}
+
+@media screen and (min-width: 1200px) {
+    body #CybotCookiebotDialog.CybotEdge.CybotMultilevel #CybotCookiebotDialogFooter .CybotCookiebotDialogBodyButton:not(:first-of-type) {
+        margin-bottom:1rem
+    }
+}

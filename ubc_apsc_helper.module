@@ -3,6 +3,7 @@
 /**
  * @file
  * Implement and invoke hooks to customise site items.
+ * Description available in ubc_apsc_helper.api.php
  */
 
 use Drupal\Core\Form\FormStateInterface;
@@ -12,7 +13,6 @@ use Drupal\Core\Form\FormStateInterface;
  */
 function ubc_apsc_helper_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 	
-  /* @var Drupal\Core\Entity\FieldableEntityInterface $entity */
   $formObject = $form_state->getFormObject();
   
   // include additional CSS library on node forms
@@ -31,6 +31,113 @@ function ubc_apsc_helper_preprocess_media(array &$variables) {
 	// set remote embedded videos to lazy loading
 	if(isset($variables['content']['field_media_oembed_video']) && is_array($variables['content']['field_media_oembed_video'])) {
 		$variables['content']['field_media_oembed_video'][0]['#attributes']['loading'] = 'lazy';
+	}
+	
+	$config = \Drupal::config('ubc_apsc_helper.settings');
+
+	if($config->get('ubc_apsc_helper.cookiebot_load')) {
+		
+		if(isset($variables['content']['field_media_oembed_video']) && is_array($variables['content']['field_media_oembed_video'])) {
+			$variables['content']['field_media_oembed_video'][0]['#attributes']['data-cookieblock-src'] = $variables['content']['field_media_oembed_video'][0]['#attributes']['src'];
+			unset($variables['content']['field_media_oembed_video'][0]['#attributes']['src']);
+			$variables['content']['field_media_oembed_video'][0]['#attributes']['data-cookieconsent'] = 'marketing';
+		}
+	}
+}
+
+/**
+ * Implements hook_preprocess_html()
+ */
+function ubc_apsc_helper_preprocess_html(&$variables) {
+	
+	// get module config settings
+	$config = \Drupal::config('ubc_apsc_helper.settings');
+
+	if($config->get('ubc_apsc_helper.external_stylesheet_load')) {
+		$body_class = $config->get('ubc_apsc_helper.external_stylesheet_body_class');
+	
+	//additional class for UBC APSC modifier styles
+	if(!empty($body_class))
+		$variables['attributes']['class'][] = $body_class;
+  }
+}
+
+/**
+ * Implements hook_library_info_build().
+ **/
+function ubc_apsc_helper_library_info_build() {
+	
+	$libraries = [];
+	
+	$config = \Drupal::config('ubc_apsc_helper.settings');
+	
+	if($config->get('ubc_apsc_helper.external_stylesheet_load')) {
+		
+		$file_url = $config->get('ubc_apsc_helper.external_stylesheet_url');
+		
+		$libraries['ubc-apsc-styles'] = [
+		  'version' => '1.0',
+		  'css' => [
+		    'theme' => [
+			  "$file_url" => [
+			    'type' => 'external',
+				'minified' => true,
+				'weight' => 50,
+				'group' => CSS_THEME,
+				'data' => "$file_url",
+				'version' => '1',
+				'media' => 'all',
+				'preprocess' => true,
+				'license' => [
+				  'name' => 'GNU-GPL-2.0-or-later',
+				  'url' => 'https://www.drupal.org/licensing/faq',
+				  'gpl-compatible' => true,
+				],
+			  ],
+			],
+		  ],
+		];
+	}
+	
+	return $libraries;
+}
+
+/**
+ * Implements hook__page_attachments(array &$page)
+ */
+function ubc_apsc_helper_page_attachments(array &$page) {
+	
+	$is_admin = \Drupal::service('router.admin_context')->isAdminRoute();
+	
+	$config = \Drupal::config('ubc_apsc_helper.settings');
+	
+	/* Load CSS library*/
+	if($config->get('ubc_apsc_helper.external_stylesheet_load') && !$is_admin) {
+
+		$page['#attached']['library'][] = 'ubc_apsc_helper/ubc-apsc-styles';
+		
+	}
+	
+	/* Load cookiebot script first in page */
+	if($config->get('ubc_apsc_helper.cookiebot_load') && !$is_admin) {
+		
+		$library_discovery = \Drupal::service('library.discovery');
+		$cookiebot_library = $library_discovery->getLibraryByName('ubc_apsc_helper', 'cookiebot');
+
+		$cookiebot_script = [
+			'#type' => 'html_tag',
+			'#tag' => 'script',
+			'#attributes' => [
+			  'src' => $cookiebot_library['js'][0]['data'],
+			  'id' => $cookiebot_library['js'][0]['attributes']['id'],
+			  'data-cbid' => $config->get('ubc_apsc_helper.cookiebot_datacbid'),
+			  'data-blockingmode' => $cookiebot_library['js'][0]['attributes']['data-blockingmode'],
+			],
+			'#weight' => -200,
+		  ];
+
+		$page['#attached']['html_head'][] = [$cookiebot_script, 'cookiebot'];
+	  
 	}
 }
 
