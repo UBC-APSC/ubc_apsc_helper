@@ -20,3 +20,9 @@ cookiebot:
   css:
     layout:
       css/cookie-styles.css: {}
+
+cookiebot-iframe-consent:
+  js:
+    js/cookiebot-iframe-consent.js : {}
+  dependencies:
+    - core/jquery

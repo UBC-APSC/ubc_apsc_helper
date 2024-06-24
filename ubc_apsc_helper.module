@@ -41,6 +41,7 @@ function ubc_apsc_helper_preprocess_media(array &$variables) {
 			$variables['content']['field_media_oembed_video'][0]['#attributes']['data-cookieblock-src'] = $variables['content']['field_media_oembed_video'][0]['#attributes']['src'];
 			unset($variables['content']['field_media_oembed_video'][0]['#attributes']['src']);
 			$variables['content']['field_media_oembed_video'][0]['#attributes']['data-cookieconsent'] = 'marketing';
+			$variables['content']['field_media_oembed_video'][0]['#attached']['library'][] = 'ubc_apsc_helper/cookiebot-iframe-consent';
 		}
 	}
 }
