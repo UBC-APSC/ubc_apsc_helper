@@ -8,8 +8,7 @@ apsc-admin-styles:
       css/admin.css: {}
 
 # Cookiebot
-cookiebot:
-  header: true
+cookiebot-script:
   js:
     https://consent.cookiebot.com/uc.js:
       type: external
@@ -17,8 +16,10 @@ cookiebot:
         id: Cookiebot
         data-cbid: ''
         data-blockingmode: auto
+
+cookiebot-banner-styles:
   css:
-    layout:
+    theme:
       css/cookie-styles.css: {}
 
 cookiebot-iframe-consent:
