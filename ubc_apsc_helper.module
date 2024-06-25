@@ -122,7 +122,7 @@ function ubc_apsc_helper_page_attachments(array &$page) {
 	if($config->get('ubc_apsc_helper.cookiebot_load') && !$is_admin) {
 		
 		$library_discovery = \Drupal::service('library.discovery');
-		$cookiebot_library = $library_discovery->getLibraryByName('ubc_apsc_helper', 'cookiebot');
+		$cookiebot_library = $library_discovery->getLibraryByName('ubc_apsc_helper', 'cookiebot-script');
 
 		$cookiebot_script = [
 			'#type' => 'html_tag',
@@ -136,7 +136,8 @@ function ubc_apsc_helper_page_attachments(array &$page) {
 			'#weight' => -200,
 		  ];
 
-		$page['#attached']['html_head'][] = [$cookiebot_script, 'cookiebot'];
+		$page['#attached']['html_head'][] = [$cookiebot_script, 'cookiebot-script'];
+		$page['#attached']['library'][] = 'ubc_apsc_helper/cookiebot-banner-styles';
 	  
 	}
 }
