@@ -1,11 +1,12 @@
 name: UBC APSC helper module
 type: module
 description: Helper module for offering site customisations without affecting other modules or the theme file
+configure: ubc_apsc_helper.form
 package: UBC APSC
 
 core_version_requirement: ^10
 
-# Information added by Drupal.org packaging script on 2020-11-18
-version: '1.0'
+# Information added for reference
+version: '1.2'
 project: 'UBC APSC'
-datestamp: 1696979629
+datestamp: 1719254718

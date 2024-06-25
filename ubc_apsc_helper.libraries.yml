@@ -21,3 +21,9 @@ cookiebot-banner-styles:
   css:
     theme:
       css/cookie-styles.css: {}
+
+cookiebot-iframe-consent:
+  js:
+    js/cookiebot-iframe-consent.js : {}
+  dependencies:
+    - core/jquery

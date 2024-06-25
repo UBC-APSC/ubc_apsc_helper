@@ -41,7 +41,7 @@ function ubc_apsc_helper_form_alter(&$form, FormStateInterface $form_state, $for
  * Implements hook_preprocess_media()
  *
  * - Change the loading for embeded iframes from 'eager' to 'lazy'.
- * - If cookiebot enabled, change the attributes for iframe to account for cookie consent choice
+ * - If cookiebot enabled, change the attributes for iframe to account for cookie consent choice, load JS to show message that consent needs to be granted for iframe to load
  *
  * @param array &$form
  *   The array containing form elements
@@ -60,6 +60,7 @@ function ubc_apsc_helper_preprocess_media(array &$variables) {
 			$variables['content']['field_media_oembed_video'][0]['#attributes']['data-cookieblock-src'] = $variables['content']['field_media_oembed_video'][0]['#attributes']['src'];
 			unset($variables['content']['field_media_oembed_video'][0]['#attributes']['src']);
 			$variables['content']['field_media_oembed_video'][0]['#attributes']['data-cookieconsent'] = 'marketing';
+			$variables['content']['field_media_oembed_video'][0]['#attached']['library'][] = 'ubc_apsc_helper/cookiebot-iframe-consent';
 		}
 	}
 }
