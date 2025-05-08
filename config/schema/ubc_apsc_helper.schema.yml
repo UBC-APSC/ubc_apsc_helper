@@ -20,3 +20,9 @@ ubc_apsc_helper.settings:
         cookiebot_datacbid:
           type: text
           label: 'Cookiebot data-cbid (cookiebot ID for this domain)'
+        cookiebot_user_roles:
+          type: sequence
+          label: 'Load cookiebot script for these user roles'
+          sequence:
+            type: checkbox
+            label: 'User role'
