@@ -86,14 +86,14 @@ class UbcApscHelperForm extends ConfigFormBase {
       '#title' => $this->t('External stylesheet URL'),
       '#default_value' => $config->get('ubc_apsc_helper.external_stylesheet_url'),
       '#description' => $this->t('The URL for the external stylesheet (preferably without protocol http: or https:)'),
-	  '#states' => array(
-		'required' => array(
-                ':input[name="external_stylesheet_load"]' => array('checked' => true),
-		),
-		'visible' => [
-                ':input[name="external_stylesheet_load"]' => ['checked' => true],
-		],
-	  ),
+      '#states' => [
+        'required' => [
+          ':input[name="external_stylesheet_load"]' => ['checked' => true],
+        ],
+		    'visible' => [
+          ':input[name="external_stylesheet_load"]' => ['checked' => true],
+        ],
+      ],
     ];
 	
 	// Cookiebot.
@@ -104,19 +104,36 @@ class UbcApscHelperForm extends ConfigFormBase {
       '#description' => $this->t('Check this box to load cookiebot.'),
     ];
 	
-    $form['cookiebot_datacbid'] = [
+    $form['cookiebot_settings'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Cookiebot Settings'),
+      '#states' => [
+      'visible' => [
+        ':input[name="cookiebot_load"]' => ['checked' => true],
+      ],
+      ],
+    ];
+
+    $form['cookiebot_settings']['cookiebot_datacbid'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Cookiebot data-cbid'),
       '#default_value' => $config->get('ubc_apsc_helper.cookiebot_datacbid'),
       '#description' => $this->t('The data-cbid for cookiebot on this domain'),
-	  '#states' => [
-		'required' => [
-                ':input[name="cookiebot_load"]' => ['checked' => true],
-		],
-		'visible' => [
-                ':input[name="cookiebot_load"]' => ['checked' => true],
-		],
-	  ],
+      '#states' => [
+      'required' => [
+        ':input[name="cookiebot_load"]' => ['checked' => true],
+      ],
+      ],
+    ];
+
+    // User roles selection for cookiebot.
+    $roles = user_role_names(TRUE); // Retrieve all roles except anonymous.
+    $form['cookiebot_settings']['cookiebot_user_roles'] = [
+      '#type' => 'checkboxes',
+      '#title' => $this->t('Load cookiebot script for these user roles'),
+      '#options' => $roles,
+      '#default_value' => $config->get('ubc_apsc_helper.cookiebot_user_roles') ?: [],
+      '#description' => $this->t('Optionally load cookiebot for these user types. Cookiebot is always loaded for anonymous users.'),
     ];
 	
     return $form;
@@ -141,6 +158,7 @@ class UbcApscHelperForm extends ConfigFormBase {
     $config->set('ubc_apsc_helper.external_stylesheet_body_class', $form_state->getValue('external_stylesheet_body_class'));
     $config->set('ubc_apsc_helper.cookiebot_load', $form_state->getValue('cookiebot_load'));
     $config->set('ubc_apsc_helper.cookiebot_datacbid', $form_state->getValue('cookiebot_datacbid'));
+    $config->set('ubc_apsc_helper.cookiebot_user_roles', $form_state->getValue('cookiebot_user_roles'));
 	
     $config->save();
 	
