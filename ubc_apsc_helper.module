@@ -25,6 +25,16 @@ function ubc_apsc_helper_form_alter(&$form, FormStateInterface $form_state, $for
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function ubc_apsc_helper_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+	if (isset($form['account']['notify'])) {
+	  // Notify user by default on account creation.
+	  $form['account']['notify']['#default_value'] = TRUE;
+	}
+}
+
+/**
  * Implements hook_preprocess_media()
  */
 function ubc_apsc_helper_preprocess_media(array &$variables) {
