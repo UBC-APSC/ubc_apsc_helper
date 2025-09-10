@@ -163,13 +163,15 @@ function _cookiebot_load_checks($config, $current_user) {
 	if ($current_user->isAnonymous()) {
 		return true;
 	}
+	
+	$current_user_roles = $current_user->getRoles();
 
 	// Check if the user has a role that requires cookiebot
 	$cookiebot_user_roles = $config->get('ubc_apsc_helper.cookiebot_user_roles');
 
 	if (!empty($cookiebot_user_roles) && is_array($cookiebot_user_roles)) {
 		foreach ($cookiebot_user_roles as $role) {
-			if (in_array($role, $current_user->getRoles())) {
+			if (in_array($role, $current_user_roles)) {
 				return true;
 			}
 		}

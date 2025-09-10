@@ -7,6 +7,6 @@ package: UBC APSC
 core_version_requirement: ^10 || ^11
 
 # Information added for reference
-version: '1.4'
+version: '2.0'
 project: 'UBC APSC'
-datestamp: 1719342996
+datestamp: 1757533537

@@ -2,11 +2,13 @@
 
 namespace Drupal\ubc_apsc_helper\Form;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\State\StateInterface;
+use Drupal\user\Entity\Role;
+use Drupal\user\RoleInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class UbcApscHelperForm extends ConfigFormBase {
 
@@ -127,11 +129,14 @@ class UbcApscHelperForm extends ConfigFormBase {
     ];
 
     // User roles selection for cookiebot.
-    $roles = user_role_names(TRUE); // Retrieve all roles except anonymous.
+    $roles = Role::loadMultiple();
+    unset($roles[RoleInterface::ANONYMOUS_ID]);
+    $role_names =  array_map(fn(RoleInterface $role) => $role->label(), $roles);
+
     $form['cookiebot_settings']['cookiebot_user_roles'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Load cookiebot script for these user roles'),
-      '#options' => $roles,
+      '#options' => $role_names,
       '#default_value' => $config->get('ubc_apsc_helper.cookiebot_user_roles') ?: [],
       '#description' => $this->t('Optionally load cookiebot for these user types. Cookiebot is always loaded for anonymous users.'),
     ];
