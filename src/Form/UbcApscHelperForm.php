@@ -13,11 +13,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class UbcApscHelperForm extends ConfigFormBase {
 
   /**
-   * The entity field manager.
+   * The entity type manager service.
    *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityFieldManager;
+  protected $entityTypeManager;
 
   /**
    * Constructs an AutoParagraphForm object.
