@@ -65,7 +65,7 @@ function ubc_apsc_helper_preprocess_html(&$variables) {
 	// get module config settings
 	$config = \Drupal::config('ubc_apsc_helper.settings');
 
-	if($config->get('ubc_apsc_helper.external_stylesheet_load')) {
+	if(!empty($config->get('ubc_apsc_helper.external_stylesheet_body_class'))) {
 		$body_class = $config->get('ubc_apsc_helper.external_stylesheet_body_class');
 	
 	//additional class for UBC APSC modifier styles
