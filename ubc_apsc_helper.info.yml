@@ -2,11 +2,11 @@ name: UBC APSC helper module
 type: module
 description: Helper module for offering site customisations without affecting other modules or the theme file
 configure: ubc_apsc_helper.form
-package: UBC APSC
+package: 'UBC APSC'
 
 core_version_requirement: ^10 || ^11
 
 # Information added for reference
-version: '2.1'
-project: 'UBC APSC'
+version: '2.2'
+project: 'ubc_apsc_helper'
 datestamp: 1758579845
