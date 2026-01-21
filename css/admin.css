@@ -4,8 +4,7 @@
 
 /* disable image upload button (in favour of media upload */
 button.ck.ck-button.ck-off.ck-file-dialog-button {
-	background-color: #ccc;
-    color: #666;
+    color: #ccc;
     cursor: not-allowed;
     pointer-events: none;
     opacity: 0.6;
