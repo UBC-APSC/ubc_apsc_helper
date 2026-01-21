@@ -7,6 +7,6 @@ package: 'UBC APSC'
 core_version_requirement: ^10 || ^11
 
 # Information added for reference
-version: '2.2'
+version: '2.3'
 project: 'ubc_apsc_helper'
-datestamp: 1758579845
+datestamp: 1769022692
