@@ -66,3 +66,8 @@ body #CybotCookiebotDialog input:checked+.CybotCookiebotDialogBodyLevelButtonSli
         margin-bottom:1rem
     }
 }
+
+/* slider fix */
+.node--view-mode-featured-content .slideshow article:not(:first-of-type, .tns-item) {
+	display:none;
+}

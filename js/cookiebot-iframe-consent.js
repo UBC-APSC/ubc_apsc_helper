@@ -1,15 +1,10 @@
-(function($) {
-		
-	const iframe = $('iframe[data-cookieblock-src]');
+document.querySelectorAll('iframe[data-cookieblock-src]').forEach((iframe) => {
+	// Create a new div element.
+	const div = document.createElement('div');
+	div.classList.add('cookieconsent-optout-marketing');
 
-	// Create a new div element
-	const div = $('<div>').addClass('cookieconsent-optout-marketing');
-
-	// Insert the div element before the iframe element
-	iframe.before(div);
-
-	// Create the HTML content
-	const htmlContent = `<div aria-label="Status message" class="message message--status js-dismiss" role="status" aria-live="polite">
+	// Create and set the HTML content.
+	div.innerHTML = `<div aria-label="Status message" class="message message--status js-dismiss" role="status" aria-live="polite">
       <button class="js-dismiss__trigger message__close" data-dismiss="message">×</button>
       <svg role="img" class="message__icon">
         <use xlink:href="#icon-alert"></use>
@@ -18,6 +13,6 @@
             </div>
   </div>`;
 
-	// Set the HTML content of the div
-	div.html(htmlContent);
-})(jQuery);
+	// Insert the div element before the iframe element.
+	iframe.parentNode.insertBefore(div, iframe);
+});

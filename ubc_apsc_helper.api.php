@@ -38,10 +38,21 @@ function ubc_apsc_helper_form_alter(&$form, FormStateInterface $form_state, $for
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ * Set new user account creation form to have email notification to true by default
+ */
+function ubc_apsc_helper_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+	if (isset($form['account']['notify'])) {
+	  // Notify user by default on account creation.
+	  $form['account']['notify']['#default_value'] = TRUE;
+	}
+}
+
+/**
  * Implements hook_preprocess_media()
  *
  * - Change the loading for embeded iframes from 'eager' to 'lazy'.
- * - If cookiebot enabled, change the attributes for iframe to account for cookie consent choice, load JS to show message that consent needs to be granted for iframe to load
+ * - If cookiebot enabled and active for the user, change the attributes for iframe to account for cookie consent choice, load JS to show message that consent needs to be granted for iframe to load
  *
  * @param array &$form
  *   The array containing form elements
@@ -53,9 +64,10 @@ function ubc_apsc_helper_preprocess_media(array &$variables) {
 	}
 	
 	$config = \Drupal::config('ubc_apsc_helper.settings');
+	$current_user = \Drupal::currentUser();
 
-	if($config->get('ubc_apsc_helper.cookiebot_load')) {
-		
+	if($config->get('ubc_apsc_helper.cookiebot_load') && _cookiebot_load_checks($config, $current_user)) {
+		// modify oembed video attributes for cookiebot marketing cookie consent
 		if(isset($variables['content']['field_media_oembed_video']) && is_array($variables['content']['field_media_oembed_video'])) {
 			$variables['content']['field_media_oembed_video'][0]['#attributes']['data-cookieblock-src'] = $variables['content']['field_media_oembed_video'][0]['#attributes']['src'];
 			unset($variables['content']['field_media_oembed_video'][0]['#attributes']['src']);
@@ -75,11 +87,11 @@ function ubc_apsc_helper_preprocess_media(array &$variables) {
  */
 function ubc_apsc_helper_preprocess_html(&$variables) {
 	
-  // get module config settings
-  $config = \Drupal::config('ubc_apsc_helper.settings');
-  
-  if($config->get('ubc_apsc_helper.external_stylesheet_load')) {
-	$body_class = $config->get('ubc_apsc_helper.external_stylesheet_body_class');
+	// get module config settings
+	$config = \Drupal::config('ubc_apsc_helper.settings');
+
+	if(!empty($config->get('ubc_apsc_helper.external_stylesheet_body_class'))) {
+		$body_class = $config->get('ubc_apsc_helper.external_stylesheet_body_class');
 	
 	//additional class for UBC APSC modifier styles
 	if(!empty($body_class))
@@ -131,12 +143,45 @@ function ubc_apsc_helper_library_info_build() {
 }
 
 /**
+ * Implements hook_library_info_alter().
+ * replace the tiny-slider library from the kraken theme with a version that has no dependencies and can run without being blocked
+ */
+function ubc_apsc_helper_library_info_alter(array &$libraries, string $extension): void {
+
+  if ($extension === 'kraken') {
+    
+	$is_admin = \Drupal::service('router.admin_context')->isAdminRoute();
+	
+	$config = \Drupal::config('ubc_apsc_helper.settings');
+
+	// check if cookiebot is activated, we are not on admin route and the user is anonymous or has a role that requires cookiebot
+	if($config->get('ubc_apsc_helper.cookiebot_load') && !$is_admin) {
+		
+		$current_user = \Drupal::currentUser();
+
+		if ( _cookiebot_load_checks($config, $current_user)) {
+
+		// if tiny-slider is present, replace it with cookiebot safe version
+		if (isset($libraries['tiny-slider'])) {
+		  
+		  // clear out the theme's originaltiny-slider JS
+		  $libraries['tiny-slider']['js'] = [];
+		  
+		  // replace with local library as a structural dependency - forces Drupal to load files whenever the theme library is called
+		  $libraries['tiny-slider']['dependencies'][] = 'ubc_apsc_helper/tiny-slider-cookiebot';
+		}
+	  }
+	}
+  }
+}
+
+/**
  * Implements hook__page_attachments(array &$page)
  * Add attachments (typically assets) to a page before it is rendered.
  *
  * If defined/activated,
  * - Load external CSS library
- * - Load cookiebot script
+ * - Load cookiebot script + styles
  *
  * @param array $variables: An associative array containing:
  * - page: A render element representing the page.
@@ -148,32 +193,61 @@ function ubc_apsc_helper_page_attachments(array &$page) {
 	
 	$config = \Drupal::config('ubc_apsc_helper.settings');
 	
+	/* Load CSS library*/
 	if($config->get('ubc_apsc_helper.external_stylesheet_load') && !$is_admin) {
 
 		$page['#attached']['library'][] = 'ubc_apsc_helper/ubc-apsc-styles';
 		
 	}
 	
+	/* Load cookiebot script first in page */
 	if($config->get('ubc_apsc_helper.cookiebot_load') && !$is_admin) {
 		
-		$library_discovery = \Drupal::service('library.discovery');
-		$cookiebot_library = $library_discovery->getLibraryByName('ubc_apsc_helper', 'cookiebot');
+		$current_user = \Drupal::currentUser();
 
-		$cookiebot_script = [
-			'#type' => 'html_tag',
-			'#tag' => 'script',
-			'#attributes' => [
-			  'src' => $cookiebot_library['js'][0]['data'],
-			  'id' => $cookiebot_library['js'][0]['attributes']['id'],
-			  'data-cbid' => $config->get('ubc_apsc_helper.cookiebot_datacbid'),
-			  'data-blockingmode' => $cookiebot_library['js'][0]['attributes']['data-blockingmode'],
-			],
-			'#weight' => -200,
-		  ];
+		// if the user is anonymous or has a role that requires cookiebot, load the script
+		if ( _cookiebot_load_checks($config, $current_user)) {
+			$library_discovery = \Drupal::service('library.discovery');
+			$cookiebot_library = $library_discovery->getLibraryByName('ubc_apsc_helper', 'cookiebot-script');
 
-		$page['#attached']['html_head'][] = [$cookiebot_script, 'cookiebot'];
-	  
+			$cookiebot_script = [
+				'#type' => 'html_tag',
+				'#tag' => 'script',
+				'#attributes' => [
+				'src' => $cookiebot_library['js'][0]['data'],
+				'id' => $cookiebot_library['js'][0]['attributes']['id'],
+				'data-cbid' => $config->get('ubc_apsc_helper.cookiebot_datacbid'),
+				'data-blockingmode' => $cookiebot_library['js'][0]['attributes']['data-blockingmode'],
+				],
+				'#weight' => -200,
+			];
+
+			$page['#attached']['html_head'][] = [$cookiebot_script, 'cookiebot-script'];
+			$page['#attached']['library'][] = 'ubc_apsc_helper/cookiebot-banner-styles';
+		}
 	}
+}
+
+function _cookiebot_load_checks($config, $current_user) {
+
+	if ($current_user->isAnonymous()) {
+		return true;
+	}
+	
+	$current_user_roles = $current_user->getRoles();
+
+	// Check if the user has a role that requires cookiebot
+	$cookiebot_user_roles = $config->get('ubc_apsc_helper.cookiebot_user_roles');
+
+	if (!empty($cookiebot_user_roles) && is_array($cookiebot_user_roles)) {
+		foreach ($cookiebot_user_roles as $role) {
+			if (in_array($role, $current_user_roles)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 /**
