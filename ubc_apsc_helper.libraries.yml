@@ -25,5 +25,13 @@ cookiebot-banner-styles:
 cookiebot-iframe-consent:
   js:
     js/cookiebot-iframe-consent.js : {}
-  dependencies:
-    - core/jquery
+
+### Tiny Slider for Cookiebot
+tiny-slider-cookiebot:
+  header: true
+  js:
+    js/tiny.slider.min.js:
+      preprocess: false
+      minified: true
+      attributes:
+        data-cookieconsent: ignore

@@ -115,6 +115,38 @@ function ubc_apsc_helper_library_info_build() {
 }
 
 /**
+ * Implements hook_library_info_alter().
+ */
+function ubc_apsc_helper_library_info_alter(array &$libraries, string $extension): void {
+
+  if ($extension === 'kraken') {
+    
+	$is_admin = \Drupal::service('router.admin_context')->isAdminRoute();
+	
+	$config = \Drupal::config('ubc_apsc_helper.settings');
+
+	// check if cookiebot is activated, we are not on admin route and the user is anonymous or has a role that requires cookiebot
+	if($config->get('ubc_apsc_helper.cookiebot_load') && !$is_admin) {
+		
+		$current_user = \Drupal::currentUser();
+
+		if ( _cookiebot_load_checks($config, $current_user)) {
+
+		// if tiny-slider is present, replace it with cookiebot safe version
+		if (isset($libraries['tiny-slider'])) {
+		  
+		  // clear out the theme's originaltiny-slider JS
+		  $libraries['tiny-slider']['js'] = [];
+		  
+		  // replace with local library as a structural dependency - forces Drupal to load files whenever the theme library is called
+		  $libraries['tiny-slider']['dependencies'][] = 'ubc_apsc_helper/tiny-slider-cookiebot';
+		}
+	  }
+	}
+  }
+}
+
+/**
  * Implements hook__page_attachments(array &$page)
  */
 function ubc_apsc_helper_page_attachments(array &$page) {
