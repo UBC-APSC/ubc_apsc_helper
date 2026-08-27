@@ -6,49 +6,54 @@
  * Description available in ubc_apsc_helper.api.php
  */
 
+use Drupal\Core\Asset\AttachedAssetsInterface;
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Form\FormStateInterface;
- 
+
 /**
  * Implements hook_form_alter().
  */
-function ubc_apsc_helper_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-	
-  $formObject = $form_state->getFormObject();
-  
-  // include additional CSS library on node forms
-  if ($formObject instanceof \Drupal\Core\Entity\EntityFormInterface) {
-    $entity = $formObject->getEntity();
-    if ($entity->getEntityTypeId() === 'node') {
-      $form['#attached']['library'][] = 'ubc_apsc_helper/apsc-admin-styles';
-    }
-  }
+function ubc_apsc_helper_form_alter(&$form, FormStateInterface $form_state, $form_id)
+{
+
+	$formObject = $form_state->getFormObject();
+
+	// include additional CSS library on node forms
+	if ($formObject instanceof \Drupal\Core\Entity\EntityFormInterface) {
+		$entity = $formObject->getEntity();
+		if ($entity->getEntityTypeId() === 'node') {
+			$form['#attached']['library'][] = 'ubc_apsc_helper/apsc-admin-styles';
+		}
+	}
 }
 
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function ubc_apsc_helper_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+function ubc_apsc_helper_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id)
+{
 	if (isset($form['account']['notify'])) {
-	  // Notify user by default on account creation.
-	  $form['account']['notify']['#default_value'] = TRUE;
+		// Notify user by default on account creation.
+		$form['account']['notify']['#default_value'] = TRUE;
 	}
 }
 
 /**
  * Implements hook_preprocess_media()
  */
-function ubc_apsc_helper_preprocess_media(array &$variables) {
+function ubc_apsc_helper_preprocess_media(array &$variables)
+{
 	// set remote embedded videos to lazy loading
-	if(isset($variables['content']['field_media_oembed_video']) && is_array($variables['content']['field_media_oembed_video'])) {
+	if (isset($variables['content']['field_media_oembed_video']) && is_array($variables['content']['field_media_oembed_video'])) {
 		$variables['content']['field_media_oembed_video'][0]['#attributes']['loading'] = 'lazy';
 	}
-	
+
 	$config = \Drupal::config('ubc_apsc_helper.settings');
 	$current_user = \Drupal::currentUser();
 
-	if($config->get('ubc_apsc_helper.cookiebot_load') && _cookiebot_load_checks($config, $current_user)) {
+	if ($config->get('ubc_apsc_helper.cookiebot_load') && _cookiebot_load_user_checks($config, $current_user)) {
 		// modify oembed video attributes for cookiebot marketing cookie consent
-		if(isset($variables['content']['field_media_oembed_video']) && is_array($variables['content']['field_media_oembed_video'])) {
+		if (isset($variables['content']['field_media_oembed_video']) && is_array($variables['content']['field_media_oembed_video'])) {
 			$variables['content']['field_media_oembed_video'][0]['#attributes']['data-cookieblock-src'] = $variables['content']['field_media_oembed_video'][0]['#attributes']['src'];
 			unset($variables['content']['field_media_oembed_video'][0]['#attributes']['src']);
 			$variables['content']['field_media_oembed_video'][0]['#attributes']['data-cookieconsent'] = 'marketing';
@@ -60,115 +65,127 @@ function ubc_apsc_helper_preprocess_media(array &$variables) {
 /**
  * Implements hook_preprocess_html()
  */
-function ubc_apsc_helper_preprocess_html(&$variables) {
-	
+function ubc_apsc_helper_preprocess_html(&$variables)
+{
+
 	// get module config settings
 	$config = \Drupal::config('ubc_apsc_helper.settings');
 
-	if(!empty($config->get('ubc_apsc_helper.external_stylesheet_body_class'))) {
+	if (!empty($config->get('ubc_apsc_helper.external_stylesheet_body_class'))) {
 		$body_class = $config->get('ubc_apsc_helper.external_stylesheet_body_class');
-	
-	//additional class for UBC APSC modifier styles
-	if(!empty($body_class))
-		$variables['attributes']['class'][] = $body_class;
-  }
+
+		//additional class for UBC APSC modifier styles
+		if (!empty($body_class))
+			$variables['attributes']['class'][] = $body_class;
+	}
 }
 
 /**
  * Implements hook_library_info_build().
  **/
-function ubc_apsc_helper_library_info_build() {
-	
+function ubc_apsc_helper_library_info_build()
+{
+
 	$libraries = [];
-	
+
 	$config = \Drupal::config('ubc_apsc_helper.settings');
-	
-	if($config->get('ubc_apsc_helper.external_stylesheet_load')) {
-		
+
+	if ($config->get('ubc_apsc_helper.external_stylesheet_load')) {
+
 		$file_url = $config->get('ubc_apsc_helper.external_stylesheet_url');
-		
+
 		$libraries['ubc-apsc-styles'] = [
-		  'version' => '1.0',
-		  'css' => [
-		    'theme' => [
-			  "$file_url" => [
-			    'type' => 'external',
-				'minified' => true,
-				'weight' => 50,
-				'group' => CSS_THEME,
-				'data' => "$file_url",
-				'version' => '1',
-				'media' => 'all',
-				'preprocess' => true,
-				'license' => [
-				  'name' => 'GNU-GPL-2.0-or-later',
-				  'url' => 'https://www.drupal.org/licensing/faq',
-				  'gpl-compatible' => true,
+			'version' => '1.0',
+			'css' => [
+				'theme' => [
+					"$file_url" => [
+						'type' => 'external',
+						'minified' => true,
+						'weight' => 50,
+						'group' => CSS_THEME,
+						'data' => "$file_url",
+						'version' => '1',
+						'media' => 'all',
+						'preprocess' => true,
+						'license' => [
+							'name' => 'GNU-GPL-2.0-or-later',
+							'url' => 'https://www.drupal.org/licensing/faq',
+							'gpl-compatible' => true,
+						],
+					],
 				],
-			  ],
 			],
-		  ],
 		];
 	}
-	
+
 	return $libraries;
 }
 
 /**
- * Implements hook_library_info_alter().
+ * Implements hook_js_alter().
  */
-function ubc_apsc_helper_library_info_alter(array &$libraries, string $extension): void {
+function ubc_apsc_helper_js_alter(&$javascript, AttachedAssetsInterface $assets)
+{
 
-  if ($extension === 'kraken') {
-    
-	$is_admin = \Drupal::service('router.admin_context')->isAdminRoute();
-	
-	$config = \Drupal::config('ubc_apsc_helper.settings');
+	// skip if we are on an administrative page
+	if (\Drupal::service('router.admin_context')->isAdminRoute())
+		return;
 
-	// check if cookiebot is activated, we are not on admin route and the user is anonymous or has a role that requires cookiebot
-	if($config->get('ubc_apsc_helper.cookiebot_load') && !$is_admin) {
-		
+	$js_to_alter = 'themes/custom/kraken/js/tiny.slider.min.js';
+
+	if (isset($javascript[$js_to_alter])) {
+
+		// Bubble up the 'user.roles' cache context to cache pages separately by role
+		$cache_metadata = new CacheableMetadata();
+		$cache_metadata->addCacheContexts(['user.roles']);
+		\Drupal::service('renderer')->addCacheableDependency($javascript[$js_to_alter], $cache_metadata);
+
+		$config = \Drupal::config('ubc_apsc_helper.settings');
+
 		$current_user = \Drupal::currentUser();
 
-		if ( _cookiebot_load_checks($config, $current_user)) {
+		// load module version of the tiny slider library for cookiebot compatibility
+		if ($config->get('ubc_apsc_helper.cookiebot_load') && _cookiebot_load_user_checks($config, $current_user)) {
 
-		// if tiny-slider is present, replace it with cookiebot safe version
-		if (isset($libraries['tiny-slider'])) {
-		  
-		  // clear out the theme's originaltiny-slider JS
-		  $libraries['tiny-slider']['js'] = [];
-		  
-		  // replace with local library as a structural dependency - forces Drupal to load files whenever the theme library is called
-		  $libraries['tiny-slider']['dependencies'][] = 'ubc_apsc_helper/tiny-slider-cookiebot';
+			$library_discovery = \Drupal::service('library.discovery');
+			$library = $library_discovery->getLibraryByName('ubc_apsc_helper', 'tiny-slider-cookiebot');
+
+			// 3. Swap out the data path for the file based on the authentication state
+			$module_path = \Drupal::service('extension.list.module')->getPath('ubc_apsc_helper');
+
+			if (!empty($library['js'])) {
+				$module_js_asset = reset($library['js']);
+				$javascript[$js_to_alter]['preprocess'] = $module_js_asset['preprocess'];
+				$javascript[$js_to_alter]['data'] = $module_js_asset['data'];
+				$javascript[$js_to_alter]['attributes'] = $module_js_asset['attributes'];
+			}
 		}
-	  }
 	}
-  }
 }
 
 /**
  * Implements hook__page_attachments(array &$page)
  */
-function ubc_apsc_helper_page_attachments(array &$page) {
-	
+function ubc_apsc_helper_page_attachments(array &$page)
+{
+
 	$is_admin = \Drupal::service('router.admin_context')->isAdminRoute();
-	
+
 	$config = \Drupal::config('ubc_apsc_helper.settings');
-	
+
 	/* Load CSS library*/
-	if($config->get('ubc_apsc_helper.external_stylesheet_load') && !$is_admin) {
+	if ($config->get('ubc_apsc_helper.external_stylesheet_load') && !$is_admin) {
 
 		$page['#attached']['library'][] = 'ubc_apsc_helper/ubc-apsc-styles';
-		
 	}
-	
+
 	/* Load cookiebot script first in page */
-	if($config->get('ubc_apsc_helper.cookiebot_load') && !$is_admin) {
-		
+	if ($config->get('ubc_apsc_helper.cookiebot_load') && !$is_admin) {
+
 		$current_user = \Drupal::currentUser();
 
 		// if the user is anonymous or has a role that requires cookiebot, load the script
-		if ( _cookiebot_load_checks($config, $current_user)) {
+		if (_cookiebot_load_user_checks($config, $current_user)) {
 			$library_discovery = \Drupal::service('library.discovery');
 			$cookiebot_library = $library_discovery->getLibraryByName('ubc_apsc_helper', 'cookiebot-script');
 
@@ -176,10 +193,10 @@ function ubc_apsc_helper_page_attachments(array &$page) {
 				'#type' => 'html_tag',
 				'#tag' => 'script',
 				'#attributes' => [
-				'src' => $cookiebot_library['js'][0]['data'],
-				'id' => $cookiebot_library['js'][0]['attributes']['id'],
-				'data-cbid' => $config->get('ubc_apsc_helper.cookiebot_datacbid'),
-				'data-blockingmode' => $cookiebot_library['js'][0]['attributes']['data-blockingmode'],
+					'src' => $cookiebot_library['js'][0]['data'],
+					'id' => $cookiebot_library['js'][0]['attributes']['id'],
+					'data-cbid' => $config->get('ubc_apsc_helper.cookiebot_datacbid'),
+					'data-blockingmode' => $cookiebot_library['js'][0]['attributes']['data-blockingmode'],
 				],
 				'#weight' => -200,
 			];
@@ -190,12 +207,13 @@ function ubc_apsc_helper_page_attachments(array &$page) {
 	}
 }
 
-function _cookiebot_load_checks($config, $current_user) {
+function _cookiebot_load_user_checks($config, $current_user)
+{
 
 	if ($current_user->isAnonymous()) {
 		return true;
 	}
-	
+
 	$current_user_roles = $current_user->getRoles();
 
 	// Check if the user has a role that requires cookiebot
@@ -221,7 +239,8 @@ function _cookiebot_load_checks($config, $current_user) {
  * @see \Drupal\update\UpdateManager::getProjects()
  * @see \Drupal\Core\Utility\ProjectInfo::processInfoList()
  */
-function ubc_apsc_helper_update_projects_alter(&$projects) {
-  // Hide a site-specific module from the list.
-  unset($projects['ubc_apsc_helper']);
+function ubc_apsc_helper_update_projects_alter(&$projects)
+{
+	// Hide a site-specific module from the list.
+	unset($projects['ubc_apsc_helper']);
 }
