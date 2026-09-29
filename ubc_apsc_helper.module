@@ -131,36 +131,45 @@ function ubc_apsc_helper_js_alter(&$javascript, AttachedAssetsInterface $assets)
 	if (\Drupal::service('router.admin_context')->isAdminRoute())
 		return;
 
-	$js_to_alter = 'themes/custom/kraken/js/tiny.slider.min.js';
+	$js_to_alter = [
+		'tiny-slider' => 'themes/custom/kraken/js/tiny.slider.min.js',
+		'ubc_ckeditor_widgets' => 'modules/contrib/ubc_ckeditor_widgets/js/functional/ubcAccordion.ui.js'
+	];
+	
+	foreach($js_to_alter as $lib => $orig_path) {
+		if (isset($javascript[$orig_path])) {
+			// Bubble up the 'user.roles' cache context to cache pages separately by role
+			$cache_metadata = new CacheableMetadata();
+			$cache_metadata->addCacheContexts(['user.roles']);
+			
+			\Drupal::service('renderer')->addCacheableDependency($javascript[$orig_path], $cache_metadata);
+			
+			$config = \Drupal::config('ubc_apsc_helper.settings');
 
-	if (isset($javascript[$js_to_alter])) {
+			$current_user = \Drupal::currentUser();
 
-		// Bubble up the 'user.roles' cache context to cache pages separately by role
-		$cache_metadata = new CacheableMetadata();
-		$cache_metadata->addCacheContexts(['user.roles']);
-		\Drupal::service('renderer')->addCacheableDependency($javascript[$js_to_alter], $cache_metadata);
+			// load local module version of script for cookiebot compatibility
+			if ($config->get('ubc_apsc_helper.cookiebot_load') && _cookiebot_load_user_checks($config, $current_user)) {
+				
+				$library_discovery = \Drupal::service('library.discovery');
+				$module_path = \Drupal::service('extension.list.module')->getPath('ubc_apsc_helper');
+				
+				// load alernative script library 
+				$library = $library_discovery->getLibraryByName('ubc_apsc_helper', "$lib-cookiebot");
 
-		$config = \Drupal::config('ubc_apsc_helper.settings');
-
-		$current_user = \Drupal::currentUser();
-
-		// load module version of the tiny slider library for cookiebot compatibility
-		if ($config->get('ubc_apsc_helper.cookiebot_load') && _cookiebot_load_user_checks($config, $current_user)) {
-
-			$library_discovery = \Drupal::service('library.discovery');
-			$library = $library_discovery->getLibraryByName('ubc_apsc_helper', 'tiny-slider-cookiebot');
-
-			// 3. Swap out the data path for the file based on the authentication state
-			$module_path = \Drupal::service('extension.list.module')->getPath('ubc_apsc_helper');
-
-			if (!empty($library['js'])) {
-				$module_js_asset = reset($library['js']);
-				$javascript[$js_to_alter]['preprocess'] = $module_js_asset['preprocess'];
-				$javascript[$js_to_alter]['data'] = $module_js_asset['data'];
-				$javascript[$js_to_alter]['attributes'] = $module_js_asset['attributes'];
+				// swap out the data path for the file based on the authentication state
+				if (!empty($library['js'])) {
+					$module_js_asset = reset($library['js']);
+					$javascript[$orig_path]['preprocess'] = $module_js_asset['preprocess'];
+					$javascript[$orig_path]['data'] = $module_js_asset['data'];
+					$javascript[$orig_path]['attributes'] = $module_js_asset['attributes'];
+				}				
 			}
 		}
 	}
+	// Clean up the reference pointer to prevent accidental variable bleeding
+	unset($module_js_asset);
+	
 }
 
 /**
