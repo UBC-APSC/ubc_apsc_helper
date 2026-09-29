@@ -28,10 +28,22 @@ cookiebot-iframe-consent:
 
 ### Tiny Slider for Cookiebot
 tiny-slider-cookiebot:
+  aggregate_target:
+    js: 'ubc_apsc_helper'
   header: true
   js:
-    js/tiny.slider.min.js:
-      preprocess: false
-      minified: true
+    src/js/tiny.slider.js:
+      preprocess: true
+      minified: false
+      attributes:
+        data-cookieconsent: ignore
+        
+ubc_ckeditor_widgets-cookiebot:
+  aggregate_target:
+    js: 'ubc_apsc_helper'
+  js:
+    src/js/ubcAccordion.ui.js:
+      preprocess: true
+      minified: false
       attributes:
         data-cookieconsent: ignore
