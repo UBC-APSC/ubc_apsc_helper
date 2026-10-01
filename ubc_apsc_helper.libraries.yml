@@ -32,9 +32,9 @@ tiny-slider-cookiebot:
     js: 'ubc_apsc_helper'
   header: true
   js:
-    src/js/tiny.slider.js:
-      preprocess: true
-      minified: false
+    js/tiny.slider.min.js:
+      preprocess: false
+      minified: true
       attributes:
         data-cookieconsent: ignore
         
