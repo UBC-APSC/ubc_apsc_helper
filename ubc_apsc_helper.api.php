@@ -27,7 +27,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   The form state being viewed.
  *
  */
-function ubc_apsc_helper_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+function ubc_apsc_helper_form_alter(&$form, FormStateInterface $form_state, $form_id): void {
 	
   /* @var Drupal\Core\Entity\FieldableEntityInterface $entity */
 	$formObject = $form_state->getFormObject();
@@ -45,7 +45,7 @@ function ubc_apsc_helper_form_alter(&$form, FormStateInterface $form_state, $for
  * Implements hook_form_FORM_ID_alter().
  * Set new user account creation form to have email notification to true by default
  */
-function ubc_apsc_helper_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id)
+function ubc_apsc_helper_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id): void
 {
 	if (isset($form['account']['notify'])) {
 		// Notify user by default on account creation.
@@ -61,8 +61,9 @@ function ubc_apsc_helper_form_user_register_form_alter(&$form, FormStateInterfac
  *
  * @param array &$form
  *   The array containing form elements
+ * @param array<string, mixed> $variables
  */
-function ubc_apsc_helper_preprocess_media(array &$variables)
+function ubc_apsc_helper_preprocess_media(array &$variables): void
 {
 	// set remote embedded videos to lazy loading
 	if (isset($variables['content']['field_media_oembed_video']) && is_array($variables['content']['field_media_oembed_video'])) {
@@ -91,7 +92,7 @@ function ubc_apsc_helper_preprocess_media(array &$variables)
  * @param array $variables: An associative array containing:
  * - page: A render element representing the page.
  */
-function ubc_apsc_helper_preprocess_html(&$variables)
+function ubc_apsc_helper_preprocess_html(&$variables): void
 {
 
 	// get module config settings
@@ -153,7 +154,7 @@ function ubc_apsc_helper_library_info_build() {
  * Implements hook_js_alter().
  * replace the tiny-slider library from the kraken theme with a version that has no dependencies and can run without being blocked
  */
-function ubc_apsc_helper_js_alter(&$javascript, AttachedAssetsInterface $assets)
+function ubc_apsc_helper_js_alter(&$javascript, AttachedAssetsInterface $assets): void
 {
 
 	// skip if we are on an administrative page
@@ -203,8 +204,9 @@ function ubc_apsc_helper_js_alter(&$javascript, AttachedAssetsInterface $assets)
  * @param array $variables: An associative array containing:
  * - page: A render element representing the page.
  *
+ *@param array<string, mixed> $page
  */
-function ubc_apsc_helper_page_attachments(array &$page)
+function ubc_apsc_helper_page_attachments(array &$page): void
 {
 
 	$is_admin = \Drupal::service('router.admin_context')->isAdminRoute();
@@ -277,7 +279,7 @@ function _cookiebot_load_user_checks($config, $current_user)
  * @see \Drupal\update\UpdateManager::getProjects()
  * @see \Drupal\Core\Utility\ProjectInfo::processInfoList()
  */
-function ubc_apsc_helper_update_projects_alter(&$projects)
+function ubc_apsc_helper_update_projects_alter(&$projects): void
 {
 	// Hide a site-specific module from the list.
 	unset($projects['ubc_apsc_helper']);
