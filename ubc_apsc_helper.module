@@ -9,6 +9,8 @@
 use Drupal\Core\Asset\AttachedAssetsInterface;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Config\ImmutableConfig;
+use Drupal\Core\Session\AccountInterface;
 
 /**
  * Implements hook_form_alter().
@@ -64,27 +66,32 @@ function ubc_apsc_helper_preprocess_media(array &$variables): void
 }
 
 /**
- * Implements hook_preprocess_html()
+ * Implements hook_preprocess_html().
+ *
+ * Adds an optional class to the <body> element.
+ *
+ * @param array<string, mixed> $variables
+ *   The template variables.
  */
-function ubc_apsc_helper_preprocess_html(&$variables): void
-{
+function ubc_apsc_helper_preprocess_html(array &$variables): void {
+  // Get module config settings.
+  $config = \Drupal::config('ubc_apsc_helper.settings');
 
-	// get module config settings
-	$config = \Drupal::config('ubc_apsc_helper.settings');
+  $body_class = $config->get('ubc_apsc_helper.external_stylesheet_body_class');
 
-	if (!empty($config->get('ubc_apsc_helper.external_stylesheet_body_class'))) {
-		$body_class = $config->get('ubc_apsc_helper.external_stylesheet_body_class');
-
-		//additional class for UBC APSC modifier styles
-		if (!empty($body_class))
-			$variables['attributes']['class'][] = $body_class;
-	}
+  // Additional class for UBC APSC modifier styles.
+  if (!empty($body_class)) {
+    $variables['attributes']['class'][] = $body_class;
+  }
 }
 
 /**
  * Implements hook_library_info_build().
- **/
-function ubc_apsc_helper_library_info_build()
+ *
+ * @return array<string, array<string, mixed>>
+ *   The library definitions, keyed by library name.
+ */
+function ubc_apsc_helper_library_info_build(): array
 {
 
 	$libraries = [];
@@ -218,27 +225,29 @@ function ubc_apsc_helper_page_attachments(array &$page): void
 	}
 }
 
-function _cookiebot_load_user_checks($config, $current_user)
-{
+/**
+ * Checks whether Cookiebot should load for the given user.
+ *
+ * @param \Drupal\Core\Config\ImmutableConfig $config
+ *   The module configuration.
+ * @param \Drupal\Core\Session\AccountInterface $current_user
+ *   The current user.
+ *
+ * @return bool
+ *   TRUE if Cookiebot should load for this user, FALSE otherwise.
+ */
+function _cookiebot_load_user_checks(ImmutableConfig $config, AccountInterface $current_user): bool {
+  if ($current_user->isAnonymous()) {
+    return TRUE;
+  }
 
-	if ($current_user->isAnonymous()) {
-		return true;
-	}
+  $cookiebot_user_roles = $config->get('ubc_apsc_helper.cookiebot_user_roles');
 
-	$current_user_roles = $current_user->getRoles();
+  if (!empty($cookiebot_user_roles) && is_array($cookiebot_user_roles)) {
+    return !empty(array_intersect($cookiebot_user_roles, $current_user->getRoles()));
+  }
 
-	// Check if the user has a role that requires cookiebot
-	$cookiebot_user_roles = $config->get('ubc_apsc_helper.cookiebot_user_roles');
-
-	if (!empty($cookiebot_user_roles) && is_array($cookiebot_user_roles)) {
-		foreach ($cookiebot_user_roles as $role) {
-			if (in_array($role, $current_user_roles)) {
-				return true;
-			}
-		}
-	}
-
-	return false;
+  return FALSE;
 }
 
 /**

@@ -14,20 +14,22 @@
 use Drupal\Core\Asset\AttachedAssetsInterface;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Config\ImmutableConfig;
+use Drupal\Core\Session\AccountInterface;
 
 /**
  * Implements hook_form_alter().
  *
  * include an additional CSS library on node add/edit forms
  *
- * @param array &$form
- *   The array containing form elements
- *   session.
- * @param \Drupal\node\FormStateInterface $form_state
+ * @param array<string, mixed> $form
+ *   The array containing form elements.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
  *   The form state being viewed.
- *
+ * @param string $form_id
+ *   The form ID.
  */
-function ubc_apsc_helper_form_alter(&$form, FormStateInterface $form_state, $form_id): void {
+function ubc_apsc_helper_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void {
 	
   /* @var Drupal\Core\Entity\FieldableEntityInterface $entity */
 	$formObject = $form_state->getFormObject();
@@ -44,8 +46,15 @@ function ubc_apsc_helper_form_alter(&$form, FormStateInterface $form_state, $for
 /**
  * Implements hook_form_FORM_ID_alter().
  * Set new user account creation form to have email notification to true by default
+ *
+ * @param array<string, mixed> $form
+ *   The array containing form elements.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   The form state being viewed.
+ * @param string $form_id
+ *   The form ID.
  */
-function ubc_apsc_helper_form_user_register_form_alter(&$form, FormStateInterface $form_state, $form_id): void
+function ubc_apsc_helper_form_user_register_form_alter(array &$form, FormStateInterface $form_state, string $form_id): void
 {
 	if (isset($form['account']['notify'])) {
 		// Notify user by default on account creation.
@@ -59,8 +68,6 @@ function ubc_apsc_helper_form_user_register_form_alter(&$form, FormStateInterfac
  * - Change the loading for embeded iframes from 'eager' to 'lazy'.
  * - If cookiebot enabled and active for the user, change the attributes for iframe to account for cookie consent choice, load JS to show message that consent needs to be granted for iframe to load
  *
- * @param array &$form
- *   The array containing form elements
  * @param array<string, mixed> $variables
  */
 function ubc_apsc_helper_preprocess_media(array &$variables): void
@@ -85,35 +92,34 @@ function ubc_apsc_helper_preprocess_media(array &$variables): void
 }
 
 /**
- * Implements hook_preprocess_html()
+ * Implements hook_preprocess_html().
  *
- * - Option to include additional classes to the <body> element and load an external CSS library
+ * Adds an optional class to the <body> element.
  *
- * @param array $variables: An associative array containing:
- * - page: A render element representing the page.
+ * @param array<string, mixed> $variables
+ *   The template variables.
  */
-function ubc_apsc_helper_preprocess_html(&$variables): void
-{
+function ubc_apsc_helper_preprocess_html(array &$variables): void {
+  // Get module config settings.
+  $config = \Drupal::config('ubc_apsc_helper.settings');
 
-	// get module config settings
-	$config = \Drupal::config('ubc_apsc_helper.settings');
+  $body_class = $config->get('ubc_apsc_helper.external_stylesheet_body_class');
 
-	if (!empty($config->get('ubc_apsc_helper.external_stylesheet_body_class'))) {
-		$body_class = $config->get('ubc_apsc_helper.external_stylesheet_body_class');
-
-		//additional class for UBC APSC modifier styles
-		if (!empty($body_class))
-			$variables['attributes']['class'][] = $body_class;
-	}
+  // Additional class for UBC APSC modifier styles.
+  if (!empty($body_class)) {
+    $variables['attributes']['class'][] = $body_class;
+  }
 }
 
 /**
  * Implements hook_library_info_build().
  *
  * Add dynamic library definitions.
+ *
+ * @return array<string, array<string, mixed>>
+ *   The library definitions, keyed by library name.
  */
-
-function ubc_apsc_helper_library_info_build() {
+function ubc_apsc_helper_library_info_build(): array {
 	
 	$libraries = [];
 
@@ -153,8 +159,13 @@ function ubc_apsc_helper_library_info_build() {
 /**
  * Implements hook_js_alter().
  * replace the tiny-slider library from the kraken theme with a version that has no dependencies and can run without being blocked
+ *
+ * @param array<string, array<string, mixed>> $javascript
+ *   The JS assets, keyed by asset path or URL.
+ * @param \Drupal\Core\Asset\AttachedAssetsInterface $assets
+ *   The assets attached to the current response.
  */
-function ubc_apsc_helper_js_alter(&$javascript, AttachedAssetsInterface $assets): void
+function ubc_apsc_helper_js_alter(array &$javascript, AttachedAssetsInterface $assets): void
 {
 
 	// skip if we are on an administrative page
@@ -201,9 +212,6 @@ function ubc_apsc_helper_js_alter(&$javascript, AttachedAssetsInterface $assets)
  * - Load external CSS library
  * - Load cookiebot script + styles
  *
- * @param array $variables: An associative array containing:
- * - page: A render element representing the page.
- *
  *@param array<string, mixed> $page
  */
 function ubc_apsc_helper_page_attachments(array &$page): void
@@ -247,39 +255,44 @@ function ubc_apsc_helper_page_attachments(array &$page): void
 	}
 }
 
-function _cookiebot_load_user_checks($config, $current_user)
-{
+/**
+ * Checks whether Cookiebot should load for the given user.
+ *
+ * @param \Drupal\Core\Config\ImmutableConfig $config
+ *   The module configuration.
+ * @param \Drupal\Core\Session\AccountInterface $current_user
+ *   The current user.
+ *
+ * @return bool
+ *   TRUE if Cookiebot should load for this user, FALSE otherwise.
+ */
+function _cookiebot_load_user_checks(ImmutableConfig $config, AccountInterface $current_user): bool {
+  if ($current_user->isAnonymous()) {
+    return TRUE;
+  }
 
-	if ($current_user->isAnonymous()) {
-		return true;
-	}
+  $cookiebot_user_roles = $config->get('ubc_apsc_helper.cookiebot_user_roles');
 
-	$current_user_roles = $current_user->getRoles();
+  if (!empty($cookiebot_user_roles) && is_array($cookiebot_user_roles)) {
+    return !empty(array_intersect($cookiebot_user_roles, $current_user->getRoles()));
+  }
 
-	// Check if the user has a role that requires cookiebot
-	$cookiebot_user_roles = $config->get('ubc_apsc_helper.cookiebot_user_roles');
-
-	if (!empty($cookiebot_user_roles) && is_array($cookiebot_user_roles)) {
-		foreach ($cookiebot_user_roles as $role) {
-			if (in_array($role, $current_user_roles)) {
-				return true;
-			}
-		}
-	}
-
-	return false;
+  return FALSE;
 }
 
 /**
- * Implements hook_update_projects_alter(&$projects).
- * Alter the list of projects before fetching data and comparing versions.
+ * Implements hook_update_projects_alter().
  *
- * Hide projects from the list to avoid "No available releases found" warnings on the available updates report
+ * Hides projects from the list to avoid "No available releases found"
+ * warnings on the available updates report.
+ *
+ * @param array<string, array<string, mixed>> $projects
+ *   The projects array, keyed by project machine name.
  *
  * @see \Drupal\update\UpdateManager::getProjects()
  * @see \Drupal\Core\Utility\ProjectInfo::processInfoList()
  */
-function ubc_apsc_helper_update_projects_alter(&$projects): void
+function ubc_apsc_helper_update_projects_alter(array &$projects): void
 {
 	// Hide a site-specific module from the list.
 	unset($projects['ubc_apsc_helper']);

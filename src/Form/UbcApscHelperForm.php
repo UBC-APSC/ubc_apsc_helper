@@ -13,32 +13,33 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class UbcApscHelperForm extends ConfigFormBase {
 
   /**
+   * The state service.
+   *
+   * @var \Drupal\Core\State\StateInterface
+   */
+  protected StateInterface $state;
+
+
+  /**
    * The entity type manager service.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityTypeManager;
+  protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
-   * Constructs an AutoParagraphForm object.
+   * Constructs a UbcApscHelperForm object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   The entityTypeManager.
+   *   The entity type manager.
+   * @param \Drupal\Core\State\StateInterface $state
+   *   The state service.
    */
   public function __construct(EntityTypeManagerInterface $entityTypeManager, StateInterface $state) {
     $this->entityTypeManager = $entityTypeManager;
+    $this->state = $state;
   }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity_type.manager'),$container
-      ->get('state')
-    );
-  }
-  
+    
   /**
    * {@inheritdoc}
    */
@@ -151,10 +152,10 @@ class UbcApscHelperForm extends ConfigFormBase {
 
   }
   
-    /**
+  /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state):void {
 	  
     $config = $this->config('ubc_apsc_helper.settings');
 	
@@ -167,6 +168,6 @@ class UbcApscHelperForm extends ConfigFormBase {
 	
     $config->save();
 	
-    return parent::submitForm($form, $form_state);
+    parent::submitForm($form, $form_state);
   }
 }
